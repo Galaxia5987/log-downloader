@@ -7,11 +7,6 @@ from git import Repo
 import wmi
 
 
-REPO_PATH = Path(__file__).parent.parent
-LOGS_DIR = REPO_PATH / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
-
-
 def commit_log(repo, log_file):
     try:
         repo.index.add([str(log_file)])
@@ -83,5 +78,9 @@ def monitor_drives():
 
 
 if __name__ == "__main__":
+    REPO_PATH = Path(__file__).parent.parent
+    LOGS_DIR = REPO_PATH / "logs"
+    LOGS_DIR.mkdir(exist_ok=True)
+
     logger.add("logfile.log")
     monitor_drives()

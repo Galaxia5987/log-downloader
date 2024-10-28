@@ -13,7 +13,7 @@ def commit_log(repo, log_file):
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
     except Exception as e:
-        logger.info(f"Error committing {log_file.name}: {e}")
+        logger.error(f"Error committing {log_file.name}: {e}")
 
 
 def get_file_signature(file_path):
@@ -51,7 +51,7 @@ def download_logs(drive_path, repo):
             else:
                 logger.info(f"Skipping {log_file.name} - already exists")
     except Exception as e:
-        logger.info(f"Error accessing {drive_path}: {e}")
+        logger.error(f"Error accessing {drive_path}: {e}")
 
 
 def monitor_drives():
@@ -62,7 +62,7 @@ def monitor_drives():
         repo = Repo(REPO_PATH)
         logger.info("Git repository initialized")
     except Exception as e:
-        logger.info(f"Error initializing git repository: {e}")
+        logger.error(f"Error initializing git repository: {e}")
         return
 
     while True:
@@ -82,5 +82,11 @@ if __name__ == "__main__":
     LOGS_DIR = REPO_PATH / "logs"
     LOGS_DIR.mkdir(exist_ok=True)
 
-    logger.add("logfile.log")
+    logger.add("logfile.log",
+               rotation="100 MB",
+               retention="1 week",
+               compression="zip",
+               format="{time} | {level} | {message}",
+               backtrace=True,
+               diagnose=True)
     monitor_drives()

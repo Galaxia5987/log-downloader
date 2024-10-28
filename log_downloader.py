@@ -13,7 +13,7 @@ def commit_log(repo, log_file):
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
     except Exception as e:
-        logger.error(f"Error committing {log_file.name}: {e}")
+        logger.exception(f"Error committing {log_file.name}: {e}")
 
 
 def get_file_signature(file_path):
@@ -51,7 +51,7 @@ def download_logs(drive_path, repo):
             else:
                 logger.info(f"Skipping {log_file.name} - already exists")
     except Exception as e:
-        logger.error(f"Error accessing {drive_path}: {e}")
+        logger.exception(f"Error accessing {drive_path}: {e}")
 
 
 def monitor_drives():
@@ -62,7 +62,7 @@ def monitor_drives():
         repo = Repo(REPO_PATH)
         logger.info("Git repository initialized")
     except Exception as e:
-        logger.error(f"Error initializing git repository: {e}")
+        logger.exception(f"Error initializing git repository: {e}")
         return
 
     while True:

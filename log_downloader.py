@@ -83,6 +83,7 @@ def monitor_drives():
 
 
 if __name__ == "__main__":
+    ADVANTAGE_SCOPE_PATH = Path("C:/Users/rakra/AppData/Local/Programs/advantagescope/AdvantageScope.exe")
     REPO_PATH = Path(__file__).parent.parent
     LOGS_DIR = REPO_PATH / "logs"
     LOGS_DIR.mkdir(exist_ok=True)

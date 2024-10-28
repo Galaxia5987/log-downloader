@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import shutil
@@ -100,7 +101,11 @@ def monitor_drives():
 
 
 if __name__ == "__main__":
-    ADVANTAGE_SCOPE_PATH = Path("C:/Users/rakra/AppData/Local/Programs/advantagescope/AdvantageScope.exe")
+    ADVANTAGE_SCOPE_PATH = Path(os.getenv("ADVANTAGE_SCOPE_PATH"))
+
+    if not (ADVANTAGE_SCOPE_PATH.is_file() and os.access(ADVANTAGE_SCOPE_PATH, os.X_OK)):
+        raise FileNotFoundError(f"The path '{ADVANTAGE_SCOPE_PATH}' is not a valid executable.")
+
     REPO_PATH = Path(__file__).parent.parent
     LOGS_DIR = REPO_PATH / "logs"
     LOGS_DIR.mkdir(exist_ok=True)

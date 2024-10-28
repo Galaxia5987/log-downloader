@@ -50,11 +50,11 @@ def download_log_file(log_file, repo, dest_path):
 def download_logs(drive_path, repo):
     try:
         for log_file in drive_path.glob("**/*.wpilog"):
-            if not is_file_downloaded(log_file):
-                dest_path = LOGS_DIR / log_file.name
-                download_log_file(log_file, repo, dest_path)
-            else:
+            if is_file_downloaded(log_file):
                 logger.info(f"Skipping {log_file.name} - already exists")
+                continue
+            dest_path = LOGS_DIR / log_file.name
+            download_log_file(log_file, repo, dest_path)
     except Exception as e:
         logger.error(f"Error accessing {drive_path}: {e}")
 

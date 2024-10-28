@@ -7,7 +7,7 @@ from git import Repo
 import wmi
 
 
-REPO_PATH = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # TODO: change
+REPO_PATH = Path(__file__).parent.parent
 LOGS_DIR = REPO_PATH / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 

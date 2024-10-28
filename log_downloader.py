@@ -1,4 +1,4 @@
-import os
+import subprocess
 import time
 import shutil
 from pathlib import Path
@@ -6,6 +6,22 @@ from loguru import logger
 from git import Repo
 import wmi
 
+
+def open_latest_log_in_advantage_scope():
+    try:
+        log_files = [(f, f.stat().st_mtime) for f in LOGS_DIR.glob("*.wpilog")]
+
+        if not log_files:
+            logger.warning("No log files found")
+            return
+
+        latest_log = max(log_files, key=lambda x: x[1])[0]
+
+        logger.info(f"Opening {latest_log.name} with AdvantageScope")
+        subprocess.Popen([ADVANTAGE_SCOPE_PATH, str(latest_log)])
+
+    except Exception as e:
+        logger.error(f"Failed to open log file: {e}")
 
 def commit_log(repo, log_file):
     try:
@@ -77,6 +93,7 @@ def monitor_drives():
         for drive in new_drives:
             logger.info(f"New drive detected: {drive}")
             download_logs(drive, repo)
+            open_latest_log_in_advantage_scope()
 
         previous_drives = current_drives
         time.sleep(1)

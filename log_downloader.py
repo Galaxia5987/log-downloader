@@ -21,12 +21,8 @@ def get_file_signature(file_path):
 
 
 def is_file_downloaded(log_file):
-    file_name = log_file.name
-    file_size = log_file.stat().st_size
-
     for existing_file in LOGS_DIR.glob("*.wpilog"):
-        if (existing_file.name == file_name and
-                existing_file.stat().st_size == file_size):
+        if get_file_signature(existing_file) == get_file_signature(log_file):
             return True
     return False
 

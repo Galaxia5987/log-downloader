@@ -36,18 +36,27 @@ def get_usb_drives():
 
     return drives
 
+def download_log_file(log_file, repo, dest_path):
+    try:
+        logger.info(f"Copying {log_file.name} ({log_file.stat().st_size} bytes)")
+        shutil.copy2(log_file, dest_path)
+        commit_log(repo, dest_path)
+    except OSError as e:
+        logger.error(f"Failed to copy {log_file.name}: {e}")
+    except Exception as e:
+        logger.error(f"Failed to process {log_file.name}: {e}")
+
+
 def download_logs(drive_path, repo):
     try:
         for log_file in drive_path.glob("**/*.wpilog"):
             if not is_file_downloaded(log_file):
                 dest_path = LOGS_DIR / log_file.name
-                logger.info(f"Copying {log_file.name} ({log_file.stat().st_size} bytes)")
-                shutil.copy2(log_file, dest_path)
-                commit_log(repo, dest_path)
+                download_log_file(log_file, repo, dest_path)
             else:
                 logger.info(f"Skipping {log_file.name} - already exists")
     except Exception as e:
-        logger.exception(f"Error accessing {drive_path}: {e}")
+        logger.error(f"Error accessing {drive_path}: {e}")
 
 
 def monitor_drives():

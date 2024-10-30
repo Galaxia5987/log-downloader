@@ -55,7 +55,7 @@ def download_logs(drive_path, repo):
     try:
         for log_file in drive_path.glob(f"**/*.{LOG_FILE_EXTENSION}"):
             if is_file_downloaded(log_file):
-                logger.info(f"Skipping {log_file.name} - already exists")
+                logger.info(f"Skipped {log_file.name} - already exists")
                 continue
             dest_path = LOGS_DIR / log_file.name
             download_log_file(log_file, repo, dest_path)

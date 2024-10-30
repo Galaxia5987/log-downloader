@@ -8,6 +8,7 @@ import wmi
 
 REPO_PATH = Path(__file__).parent.parent
 LOGS_DIR = REPO_PATH / "logs"
+LOG_FILE_EXTENSION = "wpilog"
 
 def commit_log(repo, log_file):
     try:
@@ -23,7 +24,7 @@ def get_file_signature(file_path):
 
 
 def is_file_downloaded(log_file):
-    for existing_file in LOGS_DIR.glob("*.wpilog"):
+    for existing_file in LOGS_DIR.glob(f"*.{LOG_FILE_EXTENSION}"):
         if get_file_signature(existing_file) == get_file_signature(log_file):
             return True
     return False
@@ -52,7 +53,7 @@ def download_log_file(log_file, repo, dest_path):
 
 def download_logs(drive_path, repo):
     try:
-        for log_file in drive_path.glob("**/*.wpilog"):
+        for log_file in drive_path.glob(f"**/*.{LOG_FILE_EXTENSION}"):
             if is_file_downloaded(log_file):
                 logger.info(f"Skipping {log_file.name} - already exists")
                 continue

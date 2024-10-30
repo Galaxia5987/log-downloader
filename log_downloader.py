@@ -7,6 +7,7 @@ from git import Repo
 import wmi
 
 REPO_PATH = Path(__file__).parent.parent
+DRIVERSTATION_LOGS_DIRECTORY = Path("")
 LOGS_DIR = REPO_PATH / "logs"
 LOG_FILE_EXTENSION = "wpilog"
 
@@ -40,9 +41,10 @@ def get_usb_drives():
     return drives
 
 def download_log_file(log_file, repo, dest_path):
-    shutil.copy2(log_file, dest_path)
     try:
         shutil.copy2(log_file, dest_path)
+        ds_log = DRIVERSTATION_LOGS_DIRECTORY / log_file.name
+        shutil.copy2(ds_log, dest_path)
     except OSError as error:
         logger.error(f"Failed to copy {log_file.name}: {error}")
         return

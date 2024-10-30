@@ -39,14 +39,15 @@ def get_usb_drives():
     return drives
 
 def download_log_file(log_file, repo, dest_path):
+    shutil.copy2(log_file, dest_path)
     try:
-        logger.info(f"Copying {log_file.name} ({log_file.stat().st_size} bytes)")
         shutil.copy2(log_file, dest_path)
-        commit_log(repo, dest_path)
-    except OSError as e:
-        logger.error(f"Failed to copy {log_file.name}: {e}")
-    except Exception as e:
-        logger.error(f"Failed to process {log_file.name}: {e}")
+    except OSError as error:
+        logger.error(f"Failed to copy {log_file.name}: {error}")
+        return
+
+    logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
+    commit_log(repo, dest_path)
 
 
 def download_logs(drive_path, repo):

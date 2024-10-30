@@ -6,6 +6,8 @@ from loguru import logger
 from git import Repo
 import wmi
 
+REPO_PATH = Path(__file__).parent.parent
+LOGS_DIR = REPO_PATH / "logs"
 
 def commit_log(repo, log_file):
     try:
@@ -83,8 +85,6 @@ def monitor_drives():
 
 
 if __name__ == "__main__":
-    REPO_PATH = Path(__file__).parent.parent
-    LOGS_DIR = REPO_PATH / "logs"
     LOGS_DIR.mkdir(exist_ok=True)
 
     logger.add("logfile.log",

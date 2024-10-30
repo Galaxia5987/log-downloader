@@ -55,13 +55,14 @@ def download_log_file(log_file, repo, dest_path):
     except OSError as error:
         logger.error(f"Failed to copy {log_file.name}: {error}")
         return
+    logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
 
     try:
         shutil.copy2(ds_log, dest_path)
     except OSError as error:
         logger.error(f"Failed to copy {ds_log}: {error}")
 
-    logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
+    logger.info(f"Copied {ds_log.name} ({ds_log.stat().st_size} bytes)")
     commit_and_push_log(repo, dest_path)
 
 

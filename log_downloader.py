@@ -11,11 +11,17 @@ DRIVERSTATION_LOGS_DIRECTORY = Path("")
 LOGS_DIR = REPO_PATH / "logs"
 LOG_FILE_EXTENSION = "wpilog"
 
-def commit_log(repo, log_file):
+def commit_and_push_log(repo, log_file):
     try:
         repo.index.add([str(log_file)])
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
+
+        try:
+            repo.remote().push()
+            logger.info(f"Successfully pushed commit for {log_file.name}")
+        except Exception as e:
+            logger.error(f"Error pushing commit for {log_file.name}: {e}")
     except Exception as e:
         logger.exception(f"Error committing {log_file.name}: {e}")
 
@@ -50,7 +56,7 @@ def download_log_file(log_file, repo, dest_path):
         return
 
     logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
-    commit_log(repo, dest_path)
+    commit_and_push_log(repo, dest_path)
 
 
 def download_logs(drive_path, repo):

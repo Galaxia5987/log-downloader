@@ -58,9 +58,9 @@ def is_file_downloaded(log_file):
 
 def get_usb_drives():
     drives = set()
-    c = wmi.WMI()
+    wmi_connection = wmi.WMI()
 
-    for drive in c.Win32_LogicalDisk():
+    for drive in wmi_connection.Win32_LogicalDisk():
         if drive.DriveType == 2: # removable
             drives.add(Path(f"{drive.DeviceID}/"))
 

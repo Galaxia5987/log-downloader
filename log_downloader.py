@@ -1,4 +1,5 @@
 import os
+import subprocess
 import time
 import shutil
 from pathlib import Path
@@ -6,15 +7,33 @@ from loguru import logger
 from git import Repo
 import wmi
 
-REPO_PATH = Path(__file__).parent
+
 DRIVERSTATION_LOGS_DIRECTORY = Path("C:/Users/Public/Documents/FRC/Log Files")
-LOGS_DIR = REPO_PATH / "logs"
 LOG_FILE_EXTENSION = "wpilog"
 DRIVERSTATION_FILE_EXTENSION = ".dsevents"
+LOGS_DIR = Path(os.getenv("LOGS_DIR"))
+
+
+def open_latest_log_in_advantage_scope():
+    try:
+        log_files = [(f, f.stat().st_mtime) for f in LOGS_DIR.glob("*.wpilog")]
+
+        if not log_files:
+            logger.warning("No log files found")
+            return
+
+        latest_log = max(log_files, key=lambda x: x[1])[0]
+
+        logger.info(f"Opening {latest_log.name} with AdvantageScope")
+        subprocess.Popen(("start", str(latest_log)))
+
+    except Exception as e:
+        logger.error(f"Failed to open log file: {e}")
+
 
 def commit_and_push_log(repo, log_file):
     try:
-        repo.index.add([str(log_file)])
+        repo.index.add((log_file,))
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
 
@@ -47,18 +66,19 @@ def get_usb_drives():
 
     return drives
 
-def download_log_file(log_file, repo, dest_path):
+  
+def download_log_file(log_file, repo):
     ds_log = DRIVERSTATION_LOGS_DIRECTORY / log_file.name.split(".")[0]
 
     try:
-        shutil.copy2(log_file, dest_path)
+        shutil.copy2(log_file, Path.cwd)
     except OSError as error:
         logger.error(f"Failed to copy {log_file.name}: {error}")
         return
     logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
 
     try:
-        shutil.copy2(ds_log, dest_path)
+        shutil.copy2(ds_log, Path.cwd)
     except OSError as error:
         logger.error(f"Failed to copy {ds_log}: {error}")
 
@@ -72,8 +92,7 @@ def download_logs(drive_path, repo):
             if is_file_downloaded(log_file):
                 logger.info(f"Skipped {log_file.name} - already exists")
                 continue
-            dest_path = LOGS_DIR / log_file.name
-            download_log_file(log_file, repo, dest_path)
+            download_log_file(log_file, repo)
     except Exception as e:
         logger.error(f"Error accessing {drive_path}: {e}")
 
@@ -83,7 +102,7 @@ def monitor_drives():
     previous_drives = set()
 
     try:
-        repo = Repo(REPO_PATH)
+        repo = Repo()
         logger.info("Git repository initialized")
     except Exception as e:
         logger.exception(f"Error initializing git repository: {e}")
@@ -96,6 +115,7 @@ def monitor_drives():
         for drive in new_drives:
             logger.info(f"New drive detected: {drive}")
             download_logs(drive, repo)
+            open_latest_log_in_advantage_scope()
 
         previous_drives = current_drives
         time.sleep(1)
@@ -103,6 +123,7 @@ def monitor_drives():
 
 if __name__ == "__main__":
     LOGS_DIR.mkdir(exist_ok=True)
+    os.chdir(LOGS_DIR)
 
     logger.add("logfile.log",
                rotation="100 MB",

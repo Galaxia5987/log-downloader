@@ -1,4 +1,3 @@
-import os
 import subprocess
 import time
 import shutil
@@ -7,6 +6,8 @@ from loguru import logger
 from git import Repo
 import wmi
 
+REPO_PATH = Path(__file__).parent.parent
+LOGS_DIR = REPO_PATH / "logs"
 
 def open_latest_log_in_advantage_scope():
     try:

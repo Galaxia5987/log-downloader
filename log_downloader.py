@@ -27,8 +27,8 @@ def open_latest_log_in_advantage_scope():
         logger.info(f"Opening {latest_log.name} with AdvantageScope")
         subprocess.Popen(("start", str(latest_log)))
 
-    except Exception as e:
-        logger.error(f"Failed to open log file: {e}")
+    except Exception as error:
+        logger.error(f"Failed to open log file: {error}")
 
 
 def commit_and_push_log(repo, log_file):
@@ -40,10 +40,10 @@ def commit_and_push_log(repo, log_file):
         try:
             repo.remote().push()
             logger.info(f"Successfully pushed commit for {log_file.name}")
-        except Exception as e:
-            logger.error(f"Error pushing commit for {log_file.name}: {e}")
-    except Exception as e:
-        logger.exception(f"Error committing {log_file.name}: {e}")
+        except Exception as error:
+            logger.error(f"Error pushing commit for {log_file.name}: {error}")
+    except Exception as error:
+        logger.exception(f"Error committing {log_file.name}: {error}")
 
 
 def get_file_signature(file_path):
@@ -71,19 +71,19 @@ def download_log_file(log_file, repo):
     ds_log = DRIVERSTATION_LOGS_DIRECTORY / log_file.name.split(".")[0]
 
     try:
-        shutil.copy2(log_file, Path.cwd)
+        shutil.copy2(log_file, Path.cwd())
     except OSError as error:
         logger.error(f"Failed to copy {log_file.name}: {error}")
         return
     logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
 
     try:
-        shutil.copy2(ds_log, Path.cwd)
+        shutil.copy2(ds_log, Path.cwd())
     except OSError as error:
         logger.error(f"Failed to copy {ds_log}: {error}")
 
     logger.info(f"Copied {ds_log.name} ({ds_log.stat().st_size} bytes)")
-    commit_and_push_log(repo, dest_path)
+    commit_and_push_log(repo, log_file)
 
 
 def download_logs(drive_path, repo):
@@ -93,8 +93,8 @@ def download_logs(drive_path, repo):
                 logger.info(f"Skipped {log_file.name} - already exists")
                 continue
             download_log_file(log_file, repo)
-    except Exception as e:
-        logger.error(f"Error accessing {drive_path}: {e}")
+    except Exception as error:
+        logger.error(f"Error accessing {drive_path}: {error}")
 
 
 def monitor_drives():
@@ -104,8 +104,8 @@ def monitor_drives():
     try:
         repo = Repo()
         logger.info("Git repository initialized")
-    except Exception as e:
-        logger.exception(f"Error initializing git repository: {e}")
+    except Exception as error:
+        logger.exception(f"Error initializing git repository: {error}")
         return
 
     while True:

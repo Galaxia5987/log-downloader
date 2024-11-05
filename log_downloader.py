@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import time
 import shutil
@@ -7,11 +8,11 @@ from loguru import logger
 from git import Repo
 import wmi
 
-
 DRIVERSTATION_LOGS_DIRECTORY = Path("C:/Users/Public/Documents/FRC/Log Files")
-LOG_FILE_EXTENSION = "wpilog"
 DRIVERSTATION_FILE_EXTENSION = ".dsevents"
+LOG_FILE_EXTENSION = "wpilog"
 LOGS_DIR = Path(os.getenv("LOGS_DIR"))
+DOWNLOAD_NON_COMPETITION_LOGS = bool(os.getenv("DOWNLOAD_NON_COMPETITION_LOGS"))
 
 
 def open_latest_log_in_advantage_scope():
@@ -56,15 +57,17 @@ def is_file_downloaded(log_file):
             return True
     return False
 
+
 def get_usb_drives():
     drives = set()
     wmi_connection = wmi.WMI()
 
     for drive in wmi_connection.Win32_LogicalDisk():
-        if drive.DriveType == 2: # removable
+        if drive.DriveType == 2:  # removable
             drives.add(Path(f"{drive.DeviceID}/"))
 
     return drives
+
 
 def copy_file(log_file):
     try:
@@ -74,6 +77,7 @@ def copy_file(log_file):
         return
     logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
 
+
 def download_log_file(log_file, repo):
     ds_log = (DRIVERSTATION_LOGS_DIRECTORY / log_file.stem).with_suffix(DRIVERSTATION_FILE_EXTENSION)
     copy_file(ds_log)
@@ -82,9 +86,15 @@ def download_log_file(log_file, repo):
     commit_and_push_log(repo, log_file)
 
 
+def is_competition_log(log_file) -> bool:
+    return re.search(r"_[pqe]", log_file.name) is not None
+
+
 def download_logs(drive_path, repo):
     try:
         for log_file in drive_path.glob(f"**/*.{LOG_FILE_EXTENSION}"):
+            if DOWNLOAD_NON_COMPETITION_LOGS and not is_competition_log(log_file):
+                continue
             if is_file_downloaded(log_file):
                 logger.info(f"Skipped {log_file.name} - already exists")
                 continue

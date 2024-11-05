@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import shutil
@@ -53,11 +54,11 @@ def get_usb_drives():
 
     return drives
 
-def download_log_file(log_file, repo, dest_path):
+def download_log_file(log_file, repo):
     try:
         logger.info(f"Copying {log_file.name} ({log_file.stat().st_size} bytes)")
-        shutil.copy2(log_file, dest_path)
-        commit_log(repo, dest_path)
+        shutil.copy2(log_file, Path.cwd())
+        commit_log(repo, log_file)
     except OSError as e:
         logger.error(f"Failed to copy {log_file.name}: {e}")
     except Exception as e:
@@ -70,8 +71,7 @@ def download_logs(drive_path, repo):
             if is_file_downloaded(log_file):
                 logger.info(f"Skipping {log_file.name} - already exists")
                 continue
-            dest_path = LOGS_DIR / log_file.name
-            download_log_file(log_file, repo, dest_path)
+            download_log_file(log_file, repo)
     except Exception as e:
         logger.error(f"Error accessing {drive_path}: {e}")
 
@@ -81,7 +81,7 @@ def monitor_drives():
     previous_drives = set()
 
     try:
-        repo = Repo(REPO_PATH)
+        repo = Repo()
         logger.info("Git repository initialized")
     except Exception as e:
         logger.exception(f"Error initializing git repository: {e}")
@@ -101,9 +101,8 @@ def monitor_drives():
 
 
 if __name__ == "__main__":
-    REPO_PATH = Path(__file__).parent.parent
-    LOGS_DIR = REPO_PATH / "logs"
     LOGS_DIR.mkdir(exist_ok=True)
+    os.chdir(LOGS_DIR)
 
     logger.add("logfile.log",
                rotation="100 MB",

@@ -7,7 +7,12 @@ from loguru import logger
 from git import Repo
 import wmi
 
+
+DRIVERSTATION_LOGS_DIRECTORY = Path("C:/Users/Public/Documents/FRC/Log Files")
+LOG_FILE_EXTENSION = "wpilog"
+DRIVERSTATION_FILE_EXTENSION = ".dsevents"
 LOGS_DIR = Path(os.getenv("LOGS_DIR"))
+
 
 def open_latest_log_in_advantage_scope():
     try:
@@ -25,11 +30,18 @@ def open_latest_log_in_advantage_scope():
     except Exception as e:
         logger.error(f"Failed to open log file: {e}")
 
-def commit_log(repo, log_file):
+
+def commit_and_push_log(repo, log_file):
     try:
         repo.index.add((log_file,))
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
+
+        try:
+            repo.remote().push()
+            logger.info(f"Successfully pushed commit for {log_file.name}")
+        except Exception as e:
+            logger.error(f"Error pushing commit for {log_file.name}: {e}")
     except Exception as e:
         logger.exception(f"Error committing {log_file.name}: {e}")
 
@@ -39,7 +51,7 @@ def get_file_signature(file_path):
 
 
 def is_file_downloaded(log_file):
-    for existing_file in LOGS_DIR.glob("*.wpilog"):
+    for existing_file in LOGS_DIR.glob(f"*.{LOG_FILE_EXTENSION}"):
         if get_file_signature(existing_file) == get_file_signature(log_file):
             return True
     return False
@@ -54,22 +66,31 @@ def get_usb_drives():
 
     return drives
 
+  
 def download_log_file(log_file, repo):
+    ds_log = DRIVERSTATION_LOGS_DIRECTORY / log_file.name.split(".")[0]
+
     try:
-        logger.info(f"Copying {log_file.name} ({log_file.stat().st_size} bytes)")
-        shutil.copy2(log_file, Path.cwd())
-        commit_log(repo, log_file)
-    except OSError as e:
-        logger.error(f"Failed to copy {log_file.name}: {e}")
-    except Exception as e:
-        logger.error(f"Failed to process {log_file.name}: {e}")
+        shutil.copy2(log_file, Path.cwd)
+    except OSError as error:
+        logger.error(f"Failed to copy {log_file.name}: {error}")
+        return
+    logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
+
+    try:
+        shutil.copy2(ds_log, Path.cwd)
+    except OSError as error:
+        logger.error(f"Failed to copy {ds_log}: {error}")
+
+    logger.info(f"Copied {ds_log.name} ({ds_log.stat().st_size} bytes)")
+    commit_and_push_log(repo, dest_path)
 
 
 def download_logs(drive_path, repo):
     try:
-        for log_file in drive_path.glob("**/*.wpilog"):
+        for log_file in drive_path.glob(f"**/*.{LOG_FILE_EXTENSION}"):
             if is_file_downloaded(log_file):
-                logger.info(f"Skipping {log_file.name} - already exists")
+                logger.info(f"Skipped {log_file.name} - already exists")
                 continue
             download_log_file(log_file, repo)
     except Exception as e:

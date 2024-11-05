@@ -19,7 +19,7 @@ def open_latest_log_in_advantage_scope():
         latest_log = max(log_files, key=lambda x: x[1])[0]
 
         logger.info(f"Opening {latest_log.name} with AdvantageScope")
-        subprocess.Popen([ADVANTAGE_SCOPE_PATH, str(latest_log)])
+        subprocess.Popen(("start", str(latest_log)))
 
     except Exception as e:
         logger.error(f"Failed to open log file: {e}")
@@ -101,11 +101,6 @@ def monitor_drives():
 
 
 if __name__ == "__main__":
-    ADVANTAGE_SCOPE_PATH = Path(os.getenv("ADVANTAGE_SCOPE_PATH"))
-
-    if not (ADVANTAGE_SCOPE_PATH.is_file() and os.access(ADVANTAGE_SCOPE_PATH, os.X_OK)):
-        raise FileNotFoundError(f"The path '{ADVANTAGE_SCOPE_PATH}' is not a valid executable.")
-
     REPO_PATH = Path(__file__).parent.parent
     LOGS_DIR = REPO_PATH / "logs"
     LOGS_DIR.mkdir(exist_ok=True)

@@ -66,10 +66,7 @@ def get_usb_drives():
 
     return drives
 
-  
-def download_log_file(log_file, repo):
-    ds_log = DRIVERSTATION_LOGS_DIRECTORY / log_file.name.split(".")[0]
-
+def copy_file(log_file):
     try:
         shutil.copy2(log_file, Path.cwd())
     except OSError as error:
@@ -77,12 +74,11 @@ def download_log_file(log_file, repo):
         return
     logger.info(f"Copied {log_file.name} ({log_file.stat().st_size} bytes)")
 
-    try:
-        shutil.copy2(ds_log, Path.cwd())
-    except OSError as error:
-        logger.error(f"Failed to copy {ds_log}: {error}")
+def download_log_file(log_file, repo):
+    ds_log = (DRIVERSTATION_LOGS_DIRECTORY / log_file.stem).with_suffix(DRIVERSTATION_FILE_EXTENSION)
+    copy_file(ds_log)
 
-    logger.info(f"Copied {ds_log.name} ({ds_log.stat().st_size} bytes)")
+    copy_file(log_file)
     commit_and_push_log(repo, log_file)
 
 

@@ -27,7 +27,7 @@ def open_latest_log_in_advantage_scope():
 
 def commit_log(repo, log_file):
     try:
-        repo.index.add([str(log_file)])
+        repo.index.add((log_file,))
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
     except Exception as e:

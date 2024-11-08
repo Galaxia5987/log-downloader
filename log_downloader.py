@@ -79,11 +79,12 @@ def copy_file(log_file):
 
 
 def download_log_file(log_file, repo):
+    copy_file(log_file)
+    commit_and_push_log(repo, log_file)
+
     ds_log = (DRIVERSTATION_LOGS_DIRECTORY / log_file.stem).with_suffix(DRIVERSTATION_FILE_EXTENSION)
     copy_file(ds_log)
 
-    copy_file(log_file)
-    commit_and_push_log(repo, log_file)
 
 
 def is_competition_log(log_file) -> bool:

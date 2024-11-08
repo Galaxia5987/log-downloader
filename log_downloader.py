@@ -12,7 +12,7 @@ DRIVERSTATION_LOGS_DIRECTORY = Path("C:/Users/Public/Documents/FRC/Log Files")
 DRIVERSTATION_FILE_EXTENSION = ".dsevents"
 LOG_FILE_EXTENSION = "wpilog"
 LOGS_DIR = Path(os.getenv("LOGS_DIR"))
-DOWNLOAD_NON_COMPETITION_LOGS = bool(os.getenv("DOWNLOAD_NON_COMPETITION_LOGS"))
+DOWNLOAD_COMPETITION_LOGS = bool(os.getenv("DOWNLOAD_COMPETITION_LOGS"))
 
 
 def open_latest_log_in_advantage_scope():
@@ -34,7 +34,7 @@ def open_latest_log_in_advantage_scope():
 
 def commit_and_push_log(repo, log_file):
     try:
-        repo.index.add((log_file,))
+        repo.index.add(Path(os.getcwd()) / log_file.name)
         repo.index.commit(f"Add log file: {log_file.name}")
         logger.info(f"Committed {log_file.name} to repository")
 
@@ -93,7 +93,7 @@ def is_competition_log(log_file) -> bool:
 def download_logs(drive_path, repo):
     try:
         for log_file in drive_path.glob(f"**/*.{LOG_FILE_EXTENSION}"):
-            if DOWNLOAD_NON_COMPETITION_LOGS and not is_competition_log(log_file):
+            if DOWNLOAD_COMPETITION_LOGS and not is_competition_log(log_file):
                 continue
             if is_file_downloaded(log_file):
                 logger.info(f"Skipped {log_file.name} - already exists")
